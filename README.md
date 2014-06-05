@@ -5,23 +5,19 @@ This is a simple edit widget for [ArcGIS JavaScript](http://developers.arcgis.co
 
 The idea behind this widget is to wrap very simple edit tasks in a widget to quickly add editing capabilities to a map project.
 
-Configuration
+Configuration Options
 ---
 
 ```javascript
 {
-  "name": "simpleedit",
-  "path": "widgets/simpleedit/simpleedit",
-  "options": {
-    "useDialog": true,
-    "duration": 1000,
-    "editLayers": [
-      {
-        "layerId": "myLayerId",
-        "editType": "EDIT_VERTICES"
-      }
-    ]
-  }
+  "useDialog": true,
+  "duration": 1000,
+  "editLayers": [
+    {
+      "layerId": "myLayerId",
+      "editType": "EDIT_VERTICES"
+    }
+  ]
 }
 ```
 
