@@ -5,23 +5,35 @@ define([
   'dojo/_base/array',
   'dojo/Evented',
   'dojo/on',
+  'dojo/dom',
+
+  'dojox/gesture/tap',
 
   'dijit/_WidgetBase',
 
   'dijit/Dialog',
 
-  'esri/toolbars/edit'
+  'esri/toolbars/edit',
+
+  './_gesturemixin'
 ], function(
   declare, lang, arrayUtils,
-  Evented, on,
+  Evented, on, dom, tap,
   _WidgetBase,
   Dialog,
-  Edit
+  Edit,
+  _GestureMixin
 ) {
-  'use strict';
 
   function getLayerId(lyr) {
     return lyr.layerId;
+  }
+
+  // found at http://ctrlq.org/code/19616-detect-touch-screen-javascript
+  function is_touch_device() {
+    return (('ontouchstart' in window) ||
+            (navigator.MaxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0));
   }
 
   function getLayer(graphic) {
@@ -32,13 +44,14 @@ define([
     return t[0];
   }
 
-  return declare([_WidgetBase, Evented], {
+  return declare([_WidgetBase, _GestureMixin, Evented], {
 
     // will be used to determine if a layer is
     // currently being edited
     editAction: {},
 
     startup: function() {
+      this.set('isTouch', is_touch_device());
       if (!this.get('map')) {
         this.destroy();
         console.error('SimpleEdit::map required');
@@ -93,11 +106,14 @@ define([
           editing: false,
           editType: data.editType || 'EDIT_VERTICES' // default to EDIT_VERTICES
         };
-        this.own(
-          on(layer, 'dbl-click', lang.hitch(this, 'onLayerDblClick')),
-          on(layer, 'mouse-down', lang.hitch(this, 'handleMouseDown')),
-          on(layer, 'mouse-up', lang.hitch(this, 'handleMouseUp'))
-        );
+        // check if it's a touch device, if it is, these events don't work
+        if (!this.get('isTouch')) {
+          this.own(
+            on(layer, 'dbl-click', lang.hitch(this, 'onLayerDblClick')),
+            on(layer, 'mouse-down', lang.hitch(this, 'handleMouseDown')),
+            on(layer, 'mouse-up', lang.hitch(this, 'handleMouseUp'))
+          );
+        }
         return layer;
       }, this));
 
@@ -199,6 +215,7 @@ define([
     },
 
     _init: function() {
+      this.inherited(arguments);
       this.set('loaded', true);
       this.emit('loaded', {});
     }
