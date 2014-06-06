@@ -151,7 +151,10 @@ define([
 
     // edit vertices on dbl-click
     onLayerDblClick: function(e) {
-      e.preventDefault();
+      if (!e.defaultPrevented) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       var layer, editing, editType;
       layer = this.findEditLayer(getLayer(e.graphic).id);
       editing = this.editAction[layer.id].editing;
@@ -190,12 +193,14 @@ define([
     },
 
     handleMouseDown: function(e) {
-      e.preventDefault();
+      if (!e.defaultPrevented) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
       var layer, editing;
       layer = this.findEditLayer(getLayer(e.graphic).id);
       editing = this.editAction[layer.id].editing;
       if (editing) {
-        e.stopPropagation();
         this.timeoutID = setTimeout(lang.hitch(this, function() {
           if (this.get('useDialog')) {
             this.verifyDialog._graphic = e.graphic;

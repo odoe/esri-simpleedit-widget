@@ -12,73 +12,68 @@ define([
   on, dom,
   tap
 ) {
+  var some = arrayUtils.some
+    , hitch = lang.hitch;
+
+  function stopEvent(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function getNode(target) {
+    return function(graphic) {
+      return (graphic.getNode() === target);
+    }
+  }
+
+  function handler(layers) {
+    return function(callback) {
+      return function(e) {
+        stopEvent(e);
+        var hasNode = getNode(e.target);
+        // iterate over layers
+        return some(layers, function(layer) {
+          var graphics
+            , len
+            , graphic;
+          graphics = layer.graphics;
+          len = graphics.length;
+          // find the graphic node that matches target node
+          while(len--) {
+            graphic = graphics[len];
+            if (hasNode(graphic)) {
+              e.graphic = graphic;
+              callback(e);
+              return true;
+            }
+          }
+          return false;
+        });
+      };
+    };
+  }
 
   return declare(null, {
 
     _init: function() {
       if (this.isTouch && this.editableLayers && this.editableLayers.length) {
-        console.log('map?', this.map);
-        var nodeId = this.map.id;
-        console.debug('touchmixin', nodeId);
-        var node = dom.byId(nodeId+'_gc');
-        console.debug('node?', node);
+        var nodeId
+          , node
+          , withLayers
+          , holdHandler
+          , dblClickHandler;
+
+        nodeId = this.map.id;
+        node = dom.byId(nodeId + '_gc');
+        withLayers = handler(this.editableLayers);
+        holdHandler = withLayers(hitch(this, 'handleMouseDown'));
+        dblClickHandler = withLayers(hitch(this, 'onLayerDblClick'));
+        this.duration = 100; // lower duration since hold duration is 500
         this.own(
-          on(node, tap.hold, lang.hitch(this, '_onHold')),
-          on(node, tap.doubletap, lang.hitch(this, '_onDblTap'))
-          //on(node, tap.hold, this._gestureHandler(this.editableLayers, this._onHold)),
-          //on(node, tap.doubletap, this._gestureHandler(this.editableLayers, this._onDblTap))
+          on(node, tap.hold, holdHandler),
+          on(node, tap.doubletap, dblClickHandler)
         );
       }
-    },
-
-    _gestureHandler: function(layers, func) {
-      return function(e) {
-        arrayUtils.map(layers, function(lyr) {
-          var i = lyr.graphics.length;
-          while(i--) {
-            var graphic = lyr.graphics[i];
-            var gnode = graphic.getNode();
-            if (gnode === e.target) {
-              e.graphic = graphic;
-              console.debug('found a graphic');
-              func(e);
-            }
-          }
-        });
-      };
-    },
-
-    _onDblTap: function(e) {
-      console.debug('double-tapped', e);
-      arrayUtils.forEach(this.editableLayers, function(lyr) {
-        var i = lyr.graphics.length;
-        while(i--) {
-          var graphic = lyr.graphics[i];
-          var gnode = graphic.getNode();
-          if (gnode === e.target) {
-            e.graphic = graphic;
-            console.debug('found a graphic');
-            this.onLayerDblClick(e);
-          }
-        }
-      }, this);
-    },
-
-    _onHold: function(e) {
-      console.debug('hold', e);
-      this.duration = this.duration - 500;
-      arrayUtils.forEach(this.editableLayers, function(lyr) {
-        var i = lyr.graphics.length;
-        while(i--) {
-          var graphic = lyr.graphics[i];
-          var gnode = graphic.getNode();
-          if (gnode === e.target) {
-            e.graphic = graphic;
-            console.debug('found a graphic');
-            this.handleMouseDown(e);
-          }
-        }
-      }, this);
     }
 
   });
