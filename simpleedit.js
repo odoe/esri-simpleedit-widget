@@ -79,8 +79,8 @@ define([
 
           var node = this.verifyDialog.domNode;
           this.own(
-            on(node, '.simple-delete:click', lang.hitch(this, 'deleteFeature')),
-            on(node, '.simple-cancel:click', lang.hitch(this, function() {
+            on(node, '.simple-delete:click', hitch(this, 'deleteFeature')),
+            on(node, '.simple-cancel:click', hitch(this, function() {
               this.verifyDialog.hide();
             }))
           );
@@ -92,7 +92,7 @@ define([
       if (this.get('map').loaded) {
         this.setup();
       } else {
-        on.once(this.get('map'), 'load', lang.hitch(this, 'setup'));
+        on.once(this.get('map'), 'load', hitch(this, 'setup'));
       }
 
     },
@@ -101,7 +101,7 @@ define([
       var hasLayerIds = arrayUtils.filter(this.get('editLayers'), getLayerId);
       // listen for Edit toolbar deactivate
       this.own(
-        on(this.get('editTool'), 'deactivate', lang.hitch(this, 'applyEdits'))
+        on(this.get('editTool'), 'deactivate', hitch(this, 'applyEdits'))
       );
       // iterate editable layers and listen for dbl-click
       this.set('editableLayers', arrayUtils.map(hasLayerIds, function(data) {
@@ -113,9 +113,9 @@ define([
         // check if it's a touch device, if it is, these events don't work
         if (!this.get('isTouch')) {
           this.own(
-            on(layer, 'dbl-click', lang.hitch(this, 'onLayerDblClick')),
-            on(layer, 'mouse-down', lang.hitch(this, 'handleMouseDown')),
-            on(layer, 'mouse-up', lang.hitch(this, 'handleMouseUp'))
+            on(layer, 'dbl-click', hitch(this, 'onLayerDblClick')),
+            on(layer, 'mouse-down', hitch(this, 'handleMouseDown')),
+            on(layer, 'mouse-up', hitch(this, 'handleMouseUp'))
           );
         }
         return layer;
@@ -145,9 +145,9 @@ define([
         var layer = this.findEditLayer(getLayer(e.graphic).id);
         layer.applyEdits(
           null, [e.graphic], null
-        ).then(lang.hitch(this, function() {
+        ).then(hitch(this, function() {
           this.emit('edit-tool-edits-complete', arguments);
-        }), lang.hitch(this, function() {
+        }), hitch(this, function() {
           this.emit('edit-tool-edits-error', arguments);
         }));
       }
@@ -184,13 +184,13 @@ define([
         this.deactivateEdit(layer.id);
         layer.applyEdits(
           null, null, [graphic]
-        ).then(lang.hitch(this, function() {
+        ).then(hitch(this, function() {
           if (this.get('useDialog')) {
             this.verifyDialog._graphic = null;
             this.verifyDialog.hide();
           }
           this.emit('edit-tool-edits-complete', arguments);
-        }), lang.hitch(this, function() {
+        }), hitch(this, function() {
           this.emit('edit-tool-edits-error', arguments);
         }));
       }
@@ -205,7 +205,7 @@ define([
       layer = this.findEditLayer(getLayer(e.graphic).id);
       editing = this.editAction[layer.id].editing;
       if (editing) {
-        this.timeoutID = setTimeout(lang.hitch(this, function() {
+        this.timeoutID = setTimeout(hitch(this, function() {
           if (this.get('useDialog')) {
             this.verifyDialog._graphic = e.graphic;
             this.verifyDialog.show();
