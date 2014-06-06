@@ -1,5 +1,6 @@
 /*global define, clearTimeout, setTimeout*/
 define([
+  'require',
   'dojo/_base/declare',
   'dojo/_base/lang',
   'dojo/_base/array',
@@ -11,19 +12,19 @@ define([
 
   'dijit/_WidgetBase',
 
-  'dijit/Dialog',
-
   'esri/toolbars/edit',
 
   './_gesturemixin'
 ], function(
+  require,
   declare, lang, arrayUtils,
   Evented, on, dom, tap,
   _WidgetBase,
-  Dialog,
   Edit,
   _GestureMixin
 ) {
+
+  var hitch = lang.hitch;
 
   function getLayerId(lyr) {
     return lyr.layerId;
@@ -62,25 +63,28 @@ define([
       }
 
       if (this.get('useDialog')) {
-        this.verifyDialog = new Dialog({
-          title: 'Confirm Delete',
-          closable: false,
-          content: [
-            '<div><button class="btn btn-danger simple-delete">',
-            'Yes</button>',
-            '&nbsp;&nbsp;',
-            '<button class="btn btn-success simple-cancel">',
-            'No</button></div>'
-          ].join('')
-        });
+        // lazy load the dijit/Dialg
+        require(['dijit/Dialog'], hitch(this, function(Dialog) {
+          this.verifyDialog = new Dialog({
+            title: 'Confirm Delete',
+            closable: false,
+            content: [
+              '<div><button class="btn btn-danger simple-delete">',
+              'Yes</button>',
+              '&nbsp;&nbsp;',
+              '<button class="btn btn-success simple-cancel">',
+              'No</button></div>'
+            ].join('')
+          });
 
-        var node = this.verifyDialog.domNode;
-        this.own(
-          on(node, '.simple-delete:click', lang.hitch(this, 'deleteFeature')),
-          on(node, '.simple-cancel:click', lang.hitch(this, function() {
-            this.verifyDialog.hide();
-          }))
-        );
+          var node = this.verifyDialog.domNode;
+          this.own(
+            on(node, '.simple-delete:click', lang.hitch(this, 'deleteFeature')),
+            on(node, '.simple-cancel:click', lang.hitch(this, function() {
+              this.verifyDialog.hide();
+            }))
+          );
+        }));
       }
 
       this.set('editTool', new Edit(this.get('map')));
@@ -142,9 +146,9 @@ define([
         layer.applyEdits(
           null, [e.graphic], null
         ).then(lang.hitch(this, function() {
-          this.emit('edit-tool-edits-applied-complete', arguments);
+          this.emit('edit-tool-edits-complete', arguments);
         }), lang.hitch(this, function() {
-          this.emit('edit-tool-edits-applied-error', arguments);
+          this.emit('edit-tool-edits-error', arguments);
         }));
       }
     },
@@ -184,10 +188,10 @@ define([
           if (this.get('useDialog')) {
             this.verifyDialog._graphic = null;
             this.verifyDialog.hide();
-            this.emit('edit-tool-edits-applied-complete', arguments);
           }
+          this.emit('edit-tool-edits-complete', arguments);
         }), lang.hitch(this, function() {
-          this.emit('edit-tool-edits-applied-error', arguments);
+          this.emit('edit-tool-edits-error', arguments);
         }));
       }
     },
