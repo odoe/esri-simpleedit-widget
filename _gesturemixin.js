@@ -6,11 +6,12 @@ define([
   'dojo/on',
   'dojo/dom',
 
+  'dojox/lang/functional/curry',
   'dojox/gesture/tap'
 ], function(
   declare, lang, arrayUtils,
   on, dom,
-  tap
+  curry, tap
 ) {
   var some = arrayUtils.some
     , hitch = lang.hitch
@@ -27,7 +28,7 @@ define([
     }
   }
 
-  function handler (layers, callback, e) {
+  var handler = curry(function(layers, callback, e) {
     stopEvent(e);
     var hasNode = getNode(e.target);
     // iterate over layers
@@ -48,7 +49,7 @@ define([
       }
       return false;
     });
-  }
+  });
 
   return declare(null, {
 
@@ -62,12 +63,9 @@ define([
 
         nodeId = this.map.id;
         node = dom.byId(nodeId + '_gc');
-        holdHandler = partial(
-          handler, this.editableLayers, hitch(this, 'handleMouseDown')
-        );
-        dblClickHandler = partial(
-          handler, this.editableLayers, hitch(this, 'onLayerDblClick')
-        );
+        withLayers = handler(this.editableLayers);
+        holdHandler = withLayers(hitch(this, 'handleMouseDown'));
+        dblClickHandler = withLayers(hitch(this, 'onLayerDblClick'));
         this.duration = 100; // lower duration since hold duration is 500
         this.own(
           on(node, tap.hold, holdHandler),
