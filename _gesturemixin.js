@@ -13,7 +13,8 @@ define([
   tap
 ) {
   var some = arrayUtils.some
-    , hitch = lang.hitch;
+    , hitch = lang.hitch
+    , partial = lang.partial;
 
   function stopEvent(e) {
     e.preventDefault();
@@ -26,31 +27,27 @@ define([
     }
   }
 
-  function handler(layers) {
-    return function(callback) {
-      return function(e) {
-        stopEvent(e);
-        var hasNode = getNode(e.target);
-        // iterate over layers
-        return some(layers, function(layer) {
-          var graphics
-            , len
-            , graphic;
-          graphics = layer.graphics;
-          len = graphics.length;
-          // find the graphic node that matches target node
-          while(len--) {
-            graphic = graphics[len];
-            if (hasNode(graphic)) {
-              e.graphic = graphic;
-              callback(e);
-              return true;
-            }
-          }
-          return false;
-        });
-      };
-    };
+  function handler (layers, callback, e) {
+    stopEvent(e);
+    var hasNode = getNode(e.target);
+    // iterate over layers
+    return some(layers, function(layer) {
+      var graphics
+        , len
+        , graphic;
+      graphics = layer.graphics;
+      len = graphics.length;
+      // find the graphic node that matches target node
+      while(len--) {
+        graphic = graphics[len];
+        if (hasNode(graphic)) {
+          e.graphic = graphic;
+          callback(e);
+          return true;
+        }
+      }
+      return false;
+    });
   }
 
   return declare(null, {
@@ -65,9 +62,12 @@ define([
 
         nodeId = this.map.id;
         node = dom.byId(nodeId + '_gc');
-        withLayers = handler(this.editableLayers);
-        holdHandler = withLayers(hitch(this, 'handleMouseDown'));
-        dblClickHandler = withLayers(hitch(this, 'onLayerDblClick'));
+        holdHandler = partial(
+          handler, this.editableLayers, hitch(this, 'handleMouseDown')
+        );
+        dblClickHandler = partial(
+          handler, this.editableLayers, hitch(this, 'onLayerDblClick')
+        );
         this.duration = 100; // lower duration since hold duration is 500
         this.own(
           on(node, tap.hold, holdHandler),
