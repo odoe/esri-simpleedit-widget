@@ -1,4 +1,5 @@
 /*global define*/
+/*jshint laxcomma:true*/
 define([
   'dojo/_base/declare',
   'dojo/_base/lang',
@@ -22,11 +23,9 @@ define([
     e.stopPropagation();
   }
 
-  function getNode(target) {
-    return function(graphic) {
-      return (graphic.getNode() === target);
-    }
-  }
+  var getNode = curry(function(target, graphic) {
+    return (graphic.getNode() === target);
+  });
 
   var handler = curry(function(layers, callback, e) {
     stopEvent(e);
