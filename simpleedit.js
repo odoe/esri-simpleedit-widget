@@ -7,18 +7,13 @@ define([
   'dojo/Evented',
   'dojo/on',
   'dojo/dom',
-
-  'dojox/gesture/tap',
-
   'dijit/_WidgetBase',
-
   'esri/toolbars/edit',
-
   './_gesturemixin'
 ], function(
   require,
   declare, lang, arrayUtils,
-  Evented, on, dom, tap,
+  Evented, on, dom,
   _WidgetBase,
   Edit,
   _GestureMixin
