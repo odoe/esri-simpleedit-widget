@@ -93,6 +93,7 @@ define([
     },
 
     setup: function() {
+      this.get('map').disableDoubleClickZoom();
       var hasLayerIds = arrayUtils.filter(this.get('editLayers'), getLayerId);
       // listen for Edit toolbar deactivate
       this.own(
