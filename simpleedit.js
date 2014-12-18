@@ -1,4 +1,3 @@
-/*global define, clearTimeout, setTimeout*/
 define([
   'require',
   'dojo/_base/declare',
@@ -26,7 +25,7 @@ define([
   }
 
   // found at http://ctrlq.org/code/19616-detect-touch-screen-javascript
-  function is_touch_device() {
+  function isTouchDevice() {
     return (('ontouchstart' in window) ||
             (navigator.MaxTouchPoints > 0) ||
             (navigator.msMaxTouchPoints > 0));
@@ -36,10 +35,6 @@ define([
     return graphic._graphicsLayer;
   }
 
-  function head(t) {
-    return t[0];
-  }
-
   return declare([_WidgetBase, _GestureMixin, Evented], {
 
     // will be used to determine if a layer is
@@ -47,7 +42,7 @@ define([
     editAction: {},
 
     startup: function() {
-      this.set('isTouch', is_touch_device());
+      this.set('isTouch', isTouchDevice());
       if (!this.get('map')) {
         this.destroy();
         console.error('SimpleEdit::map required');
@@ -122,9 +117,9 @@ define([
 
     // helper method to find editable layers by id
     findEditLayer: function(id) {
-      return head(arrayUtils.filter(this.get('editableLayers'), function(layer) {
+      return arrayUtils.filter(this.get('editableLayers'), function(layer) {
         return layer.id === id;
-      }));
+      }).shift();
     },
 
     deactivateEdit: function(layerId) {
@@ -155,9 +150,9 @@ define([
         e.preventDefault();
         e.stopPropagation();
       }
-      var layer, editing, editType;
-      layer = this.findEditLayer(getLayer(e.graphic).id);
-      editing = this.editAction[layer.id].editing;
+      var layer = this.findEditLayer(getLayer(e.graphic).id);
+      var editing = this.editAction[layer.id].editing;
+      var editType;
       if (!editing) {
         editType = this.editAction[layer.id].editType;
         this.editAction[layer.id].editing = true;
@@ -197,9 +192,8 @@ define([
         e.preventDefault();
         e.stopPropagation();
       }
-      var layer, editing;
-      layer = this.findEditLayer(getLayer(e.graphic).id);
-      editing = this.editAction[layer.id].editing;
+      var layer = this.findEditLayer(getLayer(e.graphic).id);
+      var editing = this.editAction[layer.id].editing;
       if (editing) {
         this.timeoutID = setTimeout(hitch(this, function() {
           if (this.get('useDialog')) {
@@ -213,7 +207,7 @@ define([
     },
 
     handleMouseUp: function(e) {
-      if(typeof this.timeoutID == 'number') {
+      if (typeof this.timeoutID == 'number') {
         clearTimeout(this.timeoutID);
         delete this.timeoutID;
       }
