@@ -213,7 +213,7 @@ define([
     },
 
     handleMouseUp: function(e) {
-      if(typeof this.timeoutID == "number") {
+      if(typeof this.timeoutID == 'number') {
         clearTimeout(this.timeoutID);
         delete this.timeoutID;
       }

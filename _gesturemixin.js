@@ -15,8 +15,7 @@ define([
   curry, tap
 ) {
   var some = arrayUtils.some
-    , hitch = lang.hitch
-    , partial = lang.partial;
+    , hitch = lang.hitch;
 
   function stopEvent(e) {
     e.preventDefault();
